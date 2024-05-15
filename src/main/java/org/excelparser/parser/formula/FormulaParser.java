@@ -174,7 +174,7 @@ public class FormulaParser {
         if (row >= table.getRowCount()) {
             throw new IllegalArgumentException("Invalid cell reference: " + cellRef + ". The table has only " + table.getRowCount() + " rows.");
         }
-        if (row <= 0) {
+        if (row <= -1) {
             throw new IllegalArgumentException("Invalid cell reference: " + cellRef + ". The row should be greater than zero.");
         }
         Object cellValue = table.getValueAt(row, column);

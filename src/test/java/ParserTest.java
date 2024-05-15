@@ -60,6 +60,7 @@ class ParserTest {
         assertFormulaEquals("A1 + B2 * C3", 6);
     }
 
+    @Test
     void testMixedCases() {
         assertFormulaEquals("pow(-2, A1 - 3) * (42 + B2)", -22);
         assertFormulaEquals("-2 + max(-2, A1 * 3, pow(A1, A2))  *  (42 + B2)", 262);
