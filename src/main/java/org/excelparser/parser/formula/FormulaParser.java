@@ -30,6 +30,9 @@ public class FormulaParser {
                 openCount++;
             } else if (isOperator(currentToken.getValue(), ')')) {
                 closeCount++;
+                if (openCount < closeCount) {
+                    throw new IllegalArgumentException("Wrong parenthesis");
+                }
             }
 
             boolean isSeparator = false;
@@ -45,6 +48,10 @@ public class FormulaParser {
             if (!isSeparator) {
                 currentExpressionTokens.add(currentToken);
             }
+        }
+
+        if (openCount != closeCount) {
+            throw new IllegalArgumentException("Wrong parenthesis");
         }
 
         if (!currentExpressionTokens.isEmpty()) {
@@ -123,19 +130,8 @@ public class FormulaParser {
                 case CELL_REF -> parseCellReference(token.getValue());
                 default -> throw new IllegalArgumentException("Unexpected token: " + token.getValue());
             };
-        } else if (tokensToParse.get(0).getType() == TokenType.PARENTHESIS || tokensToParse.get(tokensToParse.size() - 1).getType() == TokenType.PARENTHESIS) {
-            if (tokensToParse.get(0).getType() == TokenType.PARENTHESIS && !tokensToParse.get(0).getValue().equals("(")) {
-                throw new IllegalArgumentException("Incorrect parenthesis: " + tokensToParse.get(0).getValue());
-            }
-            if (tokensToParse.get(tokensToParse.size() - 1).getType() == TokenType.PARENTHESIS && !tokensToParse.get(tokensToParse.size() - 1).getValue().equals(")")) {
-                throw new IllegalArgumentException("Incorrect parenthesis: " + tokensToParse.get(tokensToParse.size() - 1).getValue());
-            }
-            if (tokensToParse.get(0).getType() != TokenType.PARENTHESIS || tokensToParse.get(tokensToParse.size() - 1).getType() != TokenType.PARENTHESIS) {
-                throw new IllegalArgumentException("Unclosed parenthesis");
-            }
-            if (!tokensToParse.get(0).getValue().equals("(") || !tokensToParse.get(tokensToParse.size() - 1).getValue().equals(")")) {
-                throw new IllegalArgumentException("Incorrect parenthesis sequence");
-            }
+        } else if (tokensToParse.get(0).getType() == TokenType.PARENTHESIS && tokensToParse.get(0).getValue().equals("(") &&
+                tokensToParse.get(tokensToParse.size() - 1).getType() == TokenType.PARENTHESIS && tokensToParse.get(tokensToParse.size() - 1).getValue().equals(")")) {
             return parseExpression(tokensToParse.subList(1, tokensToParse.size() - 1));
         } else if (tokensToParse.get(0).getType() == TokenType.FUNCTION) {
             return parseFunction(tokensToParse);
@@ -177,6 +173,9 @@ public class FormulaParser {
         int row = Integer.parseInt(cellRef.substring(1)) - 1;
         if (row >= table.getRowCount()) {
             throw new IllegalArgumentException("Invalid cell reference: " + cellRef + ". The table has only " + table.getRowCount() + " rows.");
+        }
+        if (row <= 0) {
+            throw new IllegalArgumentException("Invalid cell reference: " + cellRef + ". The row should be greater than zero.");
         }
         Object cellValue = table.getValueAt(row, column);
         if (table.getSelectedColumn() == column && table.getSelectedRow() == row) {
