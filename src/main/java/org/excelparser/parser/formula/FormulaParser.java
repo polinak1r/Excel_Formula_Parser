@@ -19,6 +19,14 @@ public class FormulaParser {
         this.table = table;
     }
 
+    /**
+     * Splits the given list of tokens into sublists based on specified separators.
+     *
+     * @param tokensToSplit the list of tokens to split
+     * @param separators    the characters used as separators for splitting
+     * @return a list of lists of tokens, each representing a sub-expression
+     * @throws IllegalArgumentException if the parentheses are mismatched
+     */
     public List<List<Token>> split(List<Token> tokensToSplit, char[] separators) {
         List<List<Token>> expressions = new ArrayList<>();
         List<Token> currentExpressionTokens = new ArrayList<>();
@@ -66,6 +74,13 @@ public class FormulaParser {
         return result;
     }
 
+    /**
+     * Parses a list of tokens into an expression, handling addition and subtraction.
+     *
+     * @param tokensToParse the list of tokens to parse
+     * @return the parsed expression
+     * @throws IllegalArgumentException if the expression is empty
+     */
     public Expression parseExpression(List<Token> tokensToParse) {
         char[] separators = {'+', '-'};
         List<List<Token>> splitTokens = split(tokensToParse, separators);
@@ -97,7 +112,12 @@ public class FormulaParser {
         return result;
     }
 
-
+    /**
+     * Parses a list of tokens into a term, handling multiplication and division.
+     *
+     * @param tokensToParse the list of tokens to parse
+     * @return the parsed expression
+     */
     public Expression parseTerm(List<Token> tokensToParse) {
         char[] separators = {'*', '/'};
         List<List<Token>> splitTokens = split(tokensToParse, separators);
@@ -121,7 +141,13 @@ public class FormulaParser {
         return result;
     }
 
-
+    /**
+     * Parses a list of tokens which can be a number, a cell reference, a function, or a parenthesis-enclosed expression.
+     *
+     * @param tokensToParse the list of tokens to parse
+     * @return the parsed expression
+     * @throws IllegalArgumentException if the token sequence is unexpected
+     */
     private Expression parseFactor(List<Token> tokensToParse) {
         if (tokensToParse.size() == 1) {
             Token token = tokensToParse.get(0);
@@ -140,6 +166,13 @@ public class FormulaParser {
         }
     }
 
+    /**
+     * Parses a function call from a list of tokens.
+     *
+     * @param tokensToParse the list of tokens representing the function call
+     * @return the parsed function expression
+     * @throws IllegalArgumentException if the function is unknown or parentheses are mismatched
+     */
     private Expression parseFunction(List<Token> tokensToParse) {
         Token functionToken = tokensToParse.get(0);
         String functionName = functionToken.getValue();
@@ -167,7 +200,13 @@ public class FormulaParser {
         };
     }
 
-
+    /**
+     * Parses a cell reference into a NumberExpression.
+     *
+     * @param cellRef the cell reference in the form of "A1", "B2", etc.
+     * @return the parsed cell reference as a NumberExpression
+     * @throws IllegalArgumentException if the cell reference is invalid
+     */
     private Expression parseCellReference(String cellRef) {
         int column = cellRef.charAt(0) - 'A' + 1;
         int row = Integer.parseInt(cellRef.substring(1)) - 1;

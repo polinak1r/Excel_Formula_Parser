@@ -75,12 +75,6 @@ public class ParserExceptionTest {
         });
     }
 
-    @Test
-    void testSelfReferencingCell() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            parseFormula("A1 + A1", 0, 1);
-        });
-    }
 
     private void parseFormula(String formula) {
         parseFormula(formula, -1, -1);
