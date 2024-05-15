@@ -1,4 +1,9 @@
-package org.example.parser;
+package org.excelparser.parser.formula;
+
+import org.excelparser.parser.token.Token;
+import org.excelparser.parser.token.TokenType;
+import org.excelparser.parser.expression.*;
+import org.excelparser.parser.expression.function.*;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -60,7 +65,15 @@ public class FormulaParser {
 
         List<Expression> terms = new ArrayList<>();
         for (List<Token> tokenList : splitTokens) {
-            terms.add(parseTerm(tokenList));
+            if (tokenList.isEmpty()) {
+                terms.add(new NumberExpression(0));
+            } else {
+                terms.add(parseTerm(tokenList));
+            }
+        }
+
+        if (terms.isEmpty()) {
+            throw new IllegalArgumentException("Empty expression");
         }
 
         Expression result = terms.get(0);
@@ -105,16 +118,24 @@ public class FormulaParser {
     private Expression parseFactor(List<Token> tokensToParse) {
         if (tokensToParse.size() == 1) {
             Token token = tokensToParse.get(0);
-            switch (token.getType()) {
-                case NUMBER:
-                    return new NumberExpression(Double.parseDouble(token.getValue()));
-                case CELL_REF:
-                    return parseCellReference(token.getValue());
-                default:
-                    throw new IllegalArgumentException("Unexpected token: " + token.getValue());
+            return switch (token.getType()) {
+                case NUMBER -> new NumberExpression(Double.parseDouble(token.getValue()));
+                case CELL_REF -> parseCellReference(token.getValue());
+                default -> throw new IllegalArgumentException("Unexpected token: " + token.getValue());
+            };
+        } else if (tokensToParse.get(0).getType() == TokenType.PARENTHESIS || tokensToParse.get(tokensToParse.size() - 1).getType() == TokenType.PARENTHESIS) {
+            if (tokensToParse.get(0).getType() == TokenType.PARENTHESIS && !tokensToParse.get(0).getValue().equals("(")) {
+                throw new IllegalArgumentException("Incorrect parenthesis: " + tokensToParse.get(0).getValue());
             }
-        } else if (tokensToParse.get(0).getType() == TokenType.PARENTHESIS && tokensToParse.get(0).getValue().equals("(") &&
-                tokensToParse.get(tokensToParse.size() - 1).getType() == TokenType.PARENTHESIS && tokensToParse.get(tokensToParse.size() - 1).getValue().equals(")")) {
+            if (tokensToParse.get(tokensToParse.size() - 1).getType() == TokenType.PARENTHESIS && !tokensToParse.get(tokensToParse.size() - 1).getValue().equals(")")) {
+                throw new IllegalArgumentException("Incorrect parenthesis: " + tokensToParse.get(tokensToParse.size() - 1).getValue());
+            }
+            if (tokensToParse.get(0).getType() != TokenType.PARENTHESIS || tokensToParse.get(tokensToParse.size() - 1).getType() != TokenType.PARENTHESIS) {
+                throw new IllegalArgumentException("Unclosed parenthesis");
+            }
+            if (!tokensToParse.get(0).getValue().equals("(") || !tokensToParse.get(tokensToParse.size() - 1).getValue().equals(")")) {
+                throw new IllegalArgumentException("Incorrect parenthesis sequence");
+            }
             return parseExpression(tokensToParse.subList(1, tokensToParse.size() - 1));
         } else if (tokensToParse.get(0).getType() == TokenType.FUNCTION) {
             return parseFunction(tokensToParse);
@@ -140,26 +161,23 @@ public class FormulaParser {
             arguments.add(parseExpression(argumentTokens));
         }
 
-        switch (functionName.toLowerCase()) {
-            case "sin":
-                return new SinExpression(arguments);
-            case "cos":
-                return new CosExpression(arguments);
-            case "pow":
-                return new PowExpression(arguments);
-            case "max":
-                return new MaxExpression(arguments);
-            case "min":
-                return new MinExpression(arguments);
-            default:
-                throw new IllegalArgumentException("Unknown function: " + functionName);
-        }
+        return switch (functionName.toLowerCase()) {
+            case "sin" -> new SinExpression(arguments);
+            case "cos" -> new CosExpression(arguments);
+            case "pow" -> new PowExpression(arguments);
+            case "max" -> new MaxExpression(arguments);
+            case "min" -> new MinExpression(arguments);
+            default -> throw new IllegalArgumentException("Unknown function: " + functionName);
+        };
     }
 
 
     private Expression parseCellReference(String cellRef) {
         int column = cellRef.charAt(0) - 'A' + 1;
         int row = Integer.parseInt(cellRef.substring(1)) - 1;
+        if (row >= table.getRowCount()) {
+            throw new IllegalArgumentException("Invalid cell reference: " + cellRef + ". The table has only " + table.getRowCount() + " rows.");
+        }
         Object cellValue = table.getValueAt(row, column);
         if (table.getSelectedColumn() == column && table.getSelectedRow() == row) {
             throw new IllegalArgumentException("Cell can't reference to itself");

@@ -1,2 +1,2 @@
-rootProject.name = "DS_Test_Task"
+rootProject.name = "TestTask_DataSpell"
 

@@ -1,4 +1,6 @@
-import org.example.parser.*;
+import org.excelparser.parser.formula.FormulaLexer;
+import org.excelparser.parser.token.Token;
+import org.excelparser.parser.token.TokenType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

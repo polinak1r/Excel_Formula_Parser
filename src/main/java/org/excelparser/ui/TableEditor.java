@@ -1,4 +1,4 @@
-package org.example.ui;
+package org.excelparser.ui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -8,7 +8,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
-import org.example.parser.*;
+import org.excelparser.parser.expression.Expression;
+import org.excelparser.parser.formula.FormulaLexer;
+import org.excelparser.parser.formula.FormulaParser;
+import org.excelparser.parser.token.Token;
 
 public class TableEditor extends JFrame {
     private JTable table;
@@ -27,8 +30,8 @@ public class TableEditor extends JFrame {
             columnHeaders[i] = String.valueOf((char) ('A' + i - 1));
         }
 
-        Object[][] rowData = new Object[101][27];
-        for (int i = 0; i < 101; i++) {
+        Object[][] rowData = new Object[100][27];
+        for (int i = 0; i < 100; i++) {
             rowData[i][0] = i + 1;
             for (int j = 1; j < 27; j++) {
                 rowData[i][j] = "";
@@ -98,9 +101,5 @@ public class TableEditor extends JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error processing formula: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new TableEditor().setVisible(true));
     }
 }

@@ -1,4 +1,4 @@
-package org.example.parser;
+package org.excelparser.parser.token;
 
 public enum TokenType {
     NUMBER,
